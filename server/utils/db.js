@@ -9,6 +9,7 @@ const setupDB = async () => {
   try {
     // Connect to MongoDB
     mongoose.set('useCreateIndex', true);
+    mongoose.set('debug', true); // Enable query debugging
     mongoose
       .connect(database.url, {
         useNewUrlParser: true,

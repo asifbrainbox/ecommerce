@@ -21,9 +21,10 @@ const storage = multer.memoryStorage();
 const upload = multer({ storage });
 
 // fetch product slug api
-router.get('/item/:slug', async (req, res) => {
+router.get('/item/:slug', auth, async (req, res) => {
   try {
     const slug = req.params.slug;
+    console.log('slug ', slug);
 
     const productDoc = await Product.findOne({ slug, isActive: true }).populate(
       {
@@ -45,6 +46,7 @@ router.get('/item/:slug', async (req, res) => {
       product: productDoc
     });
   } catch (error) {
+    console.log('productSlugError ', error);
     res.status(400).json({
       error: 'Your request could not be processed. Please try again.'
     });
@@ -81,10 +83,10 @@ router.get('/list/search/:name', async (req, res) => {
 router.get('/list', async (req, res) => {
   try {
     let {
-      sortOrder,
-      rating,
-      max,
-      min,
+      sortOrder = '{"name": 1}',
+      rating = null,
+      max = 1000000,
+      min = 0,
       category,
       page = 1,
       limit = 10
@@ -261,6 +263,7 @@ router.post(
   upload.single('image'),
   async (req, res) => {
     try {
+      console.log('addProductBody ', req.body);
       const sku = req.body.sku;
       const name = req.body.name;
       const description = req.body.description;
@@ -269,7 +272,7 @@ router.post(
       const taxable = req.body.taxable;
       const isActive = req.body.isActive;
       const brand = req.body.brand;
-      const image = req.file;
+      const image = req.body.image;
 
       if (!sku) {
         return res.status(400).json({ error: 'You must enter sku.' });
@@ -295,7 +298,9 @@ router.post(
         return res.status(400).json({ error: 'This sku is already in use.' });
       }
 
-      const { imageUrl, imageKey } = await s3Upload(image);
+      // const { imageUrl, imageKey } = await s3Upload(image);
+      const imageUrl = req.body.image;
+      const imageKey = req.body.image;
 
       const product = new Product({
         sku,
@@ -318,6 +323,7 @@ router.post(
         product: savedProduct
       });
     } catch (error) {
+      console.log('addProdError ', error);
       return res.status(400).json({
         error: 'Your request could not be processed. Please try again.'
       });
@@ -329,7 +335,7 @@ router.post(
 router.get(
   '/',
   auth,
-  role.check(ROLES.Admin, ROLES.Merchant),
+  role.check(ROLES.Admin, ROLES.Merchant, ROLES.Member),
   async (req, res) => {
     try {
       let products = [];
@@ -375,7 +381,7 @@ router.get(
 router.get(
   '/:id',
   auth,
-  role.check(ROLES.Admin, ROLES.Merchant),
+  role.check(ROLES.Admin, ROLES.Merchant, ROLES.Member),
   async (req, res) => {
     try {
       const productId = req.params.id;
