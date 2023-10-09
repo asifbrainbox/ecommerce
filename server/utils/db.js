@@ -11,7 +11,7 @@ const setupDB = async () => {
     mongoose.set('useCreateIndex', true);
     mongoose.set('debug', true); // Enable query debugging
     mongoose
-      .connect(database.url, {
+      .connect(process.env.MONGO_URI, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
         useFindAndModify: false

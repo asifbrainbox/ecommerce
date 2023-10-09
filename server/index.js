@@ -9,7 +9,8 @@ const routes = require('./routes');
 const socket = require('./socket');
 const setupDB = require('./utils/db');
 
-const { port } = keys;
+// const { port } = keys;
+const port = process.env.PORT;
 const app = express();
 
 app.use(express.urlencoded({ extended: true }));
